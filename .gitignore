@@ -1,3 +1,5 @@
 model_base_14M.pth
 *__pycache__*
 slurm-*.out
+annotation/*
+output/*
