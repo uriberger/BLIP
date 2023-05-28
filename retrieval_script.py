@@ -36,9 +36,9 @@ def compute_sim(model, transform_test, texts, image_paths):
         image_list = []
         for image_path in image_paths:
             image = Image.open(image_path)
-            image = image.to(device)
             image = transform_test(image)
             image = image.unsqueeze(dim=0)
+            image = image.to(device)
             image_list.append(image)
         
         images = torch.cat(image_list)
