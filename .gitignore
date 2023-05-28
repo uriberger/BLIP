@@ -3,3 +3,4 @@ model_base_14M.pth
 slurm-*.out
 annotation/*
 output/*
+model_large_retrieval_coco.pth
