@@ -1,4 +1,5 @@
 import torch
+import math
 import os
 import random
 import time
@@ -8,6 +9,7 @@ from models.blip_retrieval import blip_retrieval
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 from PIL import Image
+import numpy as np
 
 def load_model():
     model = blip_retrieval(pretrained='model_large_retrieval_coco.pth', image_size=384, vit='large', vit_grad_ckpt=True,
@@ -34,8 +36,15 @@ def compute_sim(model, transform_test, texts, image_paths):
         text_embed = F.normalize(model.text_proj(text_output.last_hidden_state[:,0,:]))
 
         image_list = []
-        for image_path in image_paths:
+        for i in range(len(image_paths)):
+            image_path = image_paths[i]
             image = Image.open(image_path)
+            if len(np.array(image).shape) == 2:
+                if i == 0:
+                    # The original image is black and white. Can't compute similarity
+                    return None
+                else:
+                    continue
             image = transform_test(image)
             image = image.unsqueeze(dim=0)
             image = image.to(device)
@@ -76,9 +85,23 @@ for i in range(100):
     image_paths = [os.path.join('/cs/labs/oabend/uriber/datasets/COCO', coco_data[index]['filepath'], coco_data[index]['filename']) for index in option_indices]
 
     texts = [orig_caption]
-    sim_mat = compute_sim(model, transform_test, texts, image_paths)
-    selected = torch.argmax(sim_mat).item()
-    if selected == 0:
+    batch_size = 100
+    batch_start = 0
+    max_so_far = (-1)*math.inf
+    max_ind = -1
+    while batch_start < len(image_paths):
+        batch_end = min(batch_start+batch_size, len(image_paths))
+        batch = image_paths[batch_start:batch_end]
+        sim_mat = compute_sim(model, transform_test, texts, batch)
+        if sim_mat is None:
+            continue
+        selected_ind = torch.argmax(sim_mat).item()
+        max_val = sim_mat[0, selected_ind].item()
+        if max_val > max_so_far:
+            max_so_far = max_val
+            max_ind = selected_ind
+        batch_start = batch_end
+    if max_ind == 0:
         correct_count += 1
     count += 1
 
