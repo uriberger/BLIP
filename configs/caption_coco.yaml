@@ -1,6 +1,7 @@
 image_root: '/cs/labs/oabend/uriber/datasets/COCO'
 ann_root: 'annotation'
 coco_gt_root: 'annotation/coco_gt'
+local_ann_file: 'reformulation_data/batch_1/batch_1_data.json'
 
 # set pretrained as a file path or an url
 pretrained: 'model_base_14M.pth'
@@ -29,5 +30,5 @@ prompt: 'a picture of '
 # optimizer
 weight_decay: 0.05
 min_lr: 0
-max_epoch: 5
+max_epoch: 1
 
