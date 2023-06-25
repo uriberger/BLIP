@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms.functional import InterpolationMode
 
-from data.coco_karpathy_dataset import coco_karpathy_train, coco_karpathy_caption_eval, coco_karpathy_retrieval_eval
+from data.coco_karpathy_dataset import coco_karpathy_train, coco_karpathy_local_train, coco_karpathy_caption_eval, coco_karpathy_retrieval_eval
 from data.nocaps_dataset import nocaps_eval
 from data.flickr30k_dataset import flickr30k_train, flickr30k_retrieval_eval
 from data.vqa_dataset import vqa_dataset
@@ -67,6 +67,12 @@ def create_dataset(dataset, config, min_scale=0.5):
         val_dataset = nlvr_dataset(transform_test, config['image_root'], config['ann_root'],'val')
         test_dataset = nlvr_dataset(transform_test, config['image_root'], config['ann_root'],'test')     
         return train_dataset, val_dataset, test_dataset   
+    
+    elif dataset=='local_coco':
+        train_dataset = coco_karpathy_local_train(transform_train, config['image_root'], config['ann_file'], prompt=config['prompt'])
+        val_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['ann_root'], 'val')
+        test_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['ann_root'], 'test')   
+        return train_dataset, val_dataset, test_dataset
     
     
 def create_sampler(datasets, shuffles, num_tasks, global_rank):
