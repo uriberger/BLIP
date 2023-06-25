@@ -93,7 +93,10 @@ def main(args, config):
 
     #### Dataset #### 
     print("Creating captioning dataset")
-    train_dataset, val_dataset, test_dataset = create_dataset('caption_coco', config)  
+    if 'local_ann_file' in config:
+        train_dataset, val_dataset, test_dataset = create_dataset('local_coco', config)  
+    else:
+        train_dataset, val_dataset, test_dataset = create_dataset('caption_coco', config)  
 
     if args.distributed:
         num_tasks = utils.get_world_size()
