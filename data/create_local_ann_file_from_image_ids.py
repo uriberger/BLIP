@@ -10,7 +10,7 @@ with open(image_ids_file, 'r') as fp:
 ann_data = []
 
 with open('../CLIP_prefix_caption/dataset_coco.json', 'r') as fp:
-    all_coco_data = json.load(fp)
+    all_coco_data = json.load(fp)['images']
 
 for image_id in image_id_list:
     sample = [x for x in all_coco_data if x['cocoid'] == image_id][0]
@@ -23,5 +23,5 @@ for image_id in image_id_list:
         ann_data.append(res)
 
 with open('ann.json', 'w') as fp:
-        fp.write(json.dumps(ann_data))
+    fp.write(json.dumps(ann_data))
 
