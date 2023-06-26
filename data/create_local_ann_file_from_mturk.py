@@ -14,11 +14,13 @@ data = data[1:]
 ann_data = []
 
 for sample in data:
+    if sample[29] != 'blip':
+        continue
     res = {}
     image_id = int(sample[27].split('2014_')[-1].split('.jpg')[0])
     res['image_id'] = image_id
     res['image'] = 'val2014/COCO_val2014_' + str(image_id).zfill(12) + '.jpg'
-    res['caption'] = res[30]
+    res['caption'] = sample[30]
     ann_data.append(res)
 
 with open('ann.json', 'w') as fp:
