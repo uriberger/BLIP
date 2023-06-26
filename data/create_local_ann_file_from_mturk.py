@@ -25,3 +25,5 @@ for sample in data:
 
 with open('ann.json', 'w') as fp:
     fp.write(json.dumps(ann_data))
+
+print('Finished, loaded ' + str(len(ann_data)) + ' samples')
