@@ -6,7 +6,7 @@ from torchvision.transforms.functional import InterpolationMode
 from data.coco_karpathy_dataset import coco_karpathy_train, coco_karpathy_local_train, coco_karpathy_caption_eval, coco_karpathy_retrieval_eval
 from data.nocaps_dataset import nocaps_eval
 from data.flickr30k_dataset import flickr30k_train, flickr30k_retrieval_eval
-from data.vqa_dataset import vqa_dataset
+from data.vqa_dataset import vqa_dataset, vqa_local_dataset
 from data.nlvr_dataset import nlvr_dataset
 from data.pretrain_dataset import pretrain_dataset
 from transform.randaugment import RandomAugment
@@ -73,6 +73,11 @@ def create_dataset(dataset, config, min_scale=0.5):
         val_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['ann_root'], 'val')
         test_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['ann_root'], 'test')   
         return train_dataset, val_dataset, test_dataset
+    
+    elif dataset=='local_vqa': 
+        train_dataset = vqa_local_dataset(transform_train, config['local_train_file'], config['coco_root'], split='train')
+        test_dataset = vqa_local_dataset(transform_test, config['local_test_file'], config['coco_root'], split='test')
+        return train_dataset, test_dataset
     
     
 def create_sampler(datasets, shuffles, num_tasks, global_rank):

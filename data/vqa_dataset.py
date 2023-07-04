@@ -76,6 +76,40 @@ class vqa_dataset(Dataset):
 
             return image, question, answers, weights
         
+
+class vqa_local_dataset(Dataset):
+    def __init__(self, transform, ann_file, coco_root, split="train"):
+        self.split = split        
+
+        self.transform = transform
+        self.coco_root = coco_root
+        
+        self.annotation =  json.load(open(ann_file,'r'))        
+        
+    def __len__(self):
+        return len(self.annotation)
+    
+    def __getitem__(self, index):    
+        
+        ann = self.annotation[index]
+        
+        image_path = os.path.join(self.coco_root,ann['image'])
+            
+        image = Image.open(image_path).convert('RGB')   
+        image = self.transform(image)          
+        
+        if self.split == 'test':
+            question = pre_question(ann['question'])   
+            question_id = ann['question_id']            
+            return image, question, question_id
+
+        elif self.split=='train':                                   
+            question = pre_question(ann['question'])        
+            answers = [ann['answer']]
+            weights = [0.2]  
+
+            return image, question, answers, weights
+        
         
 def vqa_collate_fn(batch):
     image_list, question_list, answer_list, weight_list, n = [], [], [], [], []
