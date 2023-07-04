@@ -1,109 +1,55 @@
 import torch
-import math
-import os
-import random
 import time
 import json
 import torch.nn.functional as F
-from models.blip_retrieval import blip_retrieval
-from torchvision import transforms
-from torchvision.transforms.functional import InterpolationMode
-from PIL import Image
-import numpy as np
 
-def load_model():
-    model = blip_retrieval(pretrained='model_large_retrieval_coco.pth', image_size=384, vit='large', vit_grad_ckpt=True,
-                        vit_ckpt_layer=12, queue_size=57600, negative_all_rank=True)
-    device = torch.device('cuda')
-    model.to(device)
-    model.eval()
+image_embeddings = torch.load('COCO_test_image_embeddings')
+text_embeddings = torch.load('COCO_test_text_embeddings')
+image_id_to_ind = {}
+for i in range(len(image_embeddings['image_ids'])):
+    image_id_to_ind[image_embeddings['image_ids'][i]] = i
+text_id_to_ind = {}
+for i in range(len(text_embeddings['ids'])):
+    text_id_to_ind[text_embeddings['ids'][i]] = i
 
-    normalize = transforms.Normalize((0.48145466, 0.4578275, 0.40821073), (0.26862954, 0.26130258, 0.27577711))
-    transform_test = transforms.Compose([
-            transforms.Resize((384, 384),interpolation=InterpolationMode.BICUBIC),
-            transforms.ToTensor(),
-            normalize,
-            ])
-    
-    return model, transform_test
-
-def compute_sim(model, transform_test, texts, image_paths):
-    device = torch.device('cuda')
+def compute_sim(texts, image_ids):
     with torch.no_grad():
-        text = texts
-        text_input = model.tokenizer(text, padding='max_length', truncation=True, max_length=35, return_tensors="pt").to(device) 
-        text_output = model.text_encoder(text_input.input_ids, attention_mask = text_input.attention_mask, mode='text')  
-        text_embed = F.normalize(model.text_proj(text_output.last_hidden_state[:,0,:]))
-
-        image_list = []
-        for i in range(len(image_paths)):
-            image_path = image_paths[i]
-            image = Image.open(image_path)
-            if len(np.array(image).shape) == 2:
-                if i == 0:
-                    # The original image is black and white. Can't compute similarity
-                    return None
-                else:
-                    continue
-            image = transform_test(image)
-            image = image.unsqueeze(dim=0)
-            image = image.to(device)
-            image_list.append(image)
-        
-        images = torch.cat(image_list)
-        image_feat = model.visual_encoder(images)
-        image_embed = model.vision_proj(image_feat[:,0,:])            
-        image_embed = F.normalize(image_embed,dim=-1)
-
+        text_inds = [text_id_to_ind[x] for x in texts]
+        image_inds = [image_id_to_ind[x] for x in image_ids if x in image_id_to_ind]
+        text_embed = text_embeddings['embeddings'][text_inds]
+        image_embed = image_embeddings['embeddings'][image_inds]
         res = torch.matmul(text_embed, image_embed.transpose(1, 0))
-    return res
-
-def get_all_others(i, sample_num):
-    res = list(range(sample_num))
-    res.pop(i)
     return res
 
 with open('../CLIP_prefix_caption/dataset_coco.json', 'r') as fp:
     coco_data = json.load(fp)
 
-coco_data = [x for x in coco_data['images'] if x['split'] == 'val']
-
-print('Loading model...', flush=True)
-model, transform_test = load_model()
+coco_data = [x for x in coco_data['images'] if x['split'] == 'test']
 
 correct_count = 0
 count = 0
+res = {}
+all_image_ids = [x['cocoid'] for x in coco_data if x['cocoid'] in image_id_to_ind]
 t = time.time()
-#for i in range(len(coco_data)):
-for i in range(100):
-    if i % 2 == 0:
+for i in range(len(coco_data)):
+    if i % 100 == 0:
         print('Starting sample ' + str(i) + ' out of ' + str(len(coco_data)) + ', time from prev ' + str(time.time()-t), flush=True)
         t = time.time()
-    orig_caption = random.choice([x['raw'] for x in coco_data[i]['sentences']])
-    distractor_indices = get_all_others(i, len(coco_data))
-    option_indices = [i] + distractor_indices
-    image_paths = [os.path.join('/cs/labs/oabend/uriber/datasets/COCO', coco_data[index]['filepath'], coco_data[index]['filename']) for index in option_indices]
-
-    texts = [orig_caption]
-    batch_size = 100
-    batch_start = 0
-    max_so_far = (-1)*math.inf
-    max_ind = -1
-    while batch_start < len(image_paths):
-        batch_end = min(batch_start+batch_size, len(image_paths))
-        batch = image_paths[batch_start:batch_end]
-        sim_mat = compute_sim(model, transform_test, texts, batch)
-        if sim_mat is None:
-            continue
+    image_id = coco_data[i]['cocoid']
+    if image_id not in image_id_to_ind:
+        continue
+    correct_ind = image_id_to_ind[image_id]
+    res[image_id] = []
+    for j in range(len(coco_data[i]['sentences'])):
+        orig_caption_id = coco_data[i]['sentences'][j]['sentid']
+        sim_mat = compute_sim([orig_caption_id], all_image_ids)
         selected_ind = torch.argmax(sim_mat).item()
-        max_val = sim_mat[0, selected_ind].item()
-        if max_val > max_so_far:
-            max_so_far = max_val
-            max_ind = selected_ind
-        batch_start = batch_end
-    if max_ind == 0:
-        correct_count += 1
-    count += 1
+        if selected_ind == correct_ind:
+            correct_count += 1
+        count += 1
+        res[image_id].append(sim_mat)
 
 accuracy = correct_count/count
 print(accuracy)
+torch.save(res, 'res')
+print('Finished!')
