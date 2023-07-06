@@ -1,16 +1,17 @@
 image_root: '/cs/labs/oabend/uriber/datasets/COCO'
 ann_root: 'annotation'
 coco_gt_root: 'annotation/coco_gt'
-local_ann_file: 'reformulation_data/batch_1/batch_1_data.json'
+local_ann_file: 'reformulation_data/batch_5/batch_5_reformulation_data.json'
+#local_ann_file: 'pascal_data/pascal_orig.json'
 
 # set pretrained as a file path or an url
-pretrained: 'model_base_14M.pth'
+pretrained: 'output/after_batch_5_gt_clip/checkpoint_best.pth'
 
 # size of vit model; base or large
 vit: 'base'
 vit_grad_ckpt: False
 vit_ckpt_layer: 0
-batch_size: 32
+batch_size: 16
 init_lr: 1e-5
 
 # vit: 'large'
