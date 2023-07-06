@@ -114,6 +114,33 @@ class coco_karpathy_caption_eval(Dataset):
         
         img_id = ann['image'].split('/')[-1].strip('.jpg').split('_')[-1]
         
+        return image, int(img_id)
+
+
+class coco_karpathy_local_eval(Dataset):
+    def __init__(self, transform, image_root, ann_file, split):  
+        '''
+        image_root (string): Root directory of images (e.g. coco/images/)
+        ann_file (string): file containing annotations
+        split (string): val or test
+        '''
+        self.annotation = json.load(open(ann_file,'r'))
+        self.transform = transform
+        self.image_root = image_root
+        
+    def __len__(self):
+        return len(self.annotation)
+    
+    def __getitem__(self, index):    
+        
+        ann = self.annotation[index]
+        
+        image_path = os.path.join(self.image_root,ann['image'])        
+        image = Image.open(image_path).convert('RGB')   
+        image = self.transform(image)          
+        
+        img_id = ann['image_id']
+        
         return image, int(img_id)   
     
     
