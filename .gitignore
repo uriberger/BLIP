@@ -5,4 +5,5 @@ annotation/*
 output/*
 model_large_retrieval_coco.pth
 reformulation_data/*
+pascal_data/*
 *~
