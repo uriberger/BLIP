@@ -93,7 +93,7 @@ def main(args, config):
 
     #### Dataset #### 
     print("Creating captioning dataset")
-    if 'local_ann_file' in config:
+    if 'local_train_file' in config:
         train_dataset, val_dataset, test_dataset = create_dataset('local_coco', config)  
     else:
         train_dataset, val_dataset, test_dataset = create_dataset('caption_coco', config)  
