@@ -1,4 +1,4 @@
-image_root: '/cs/labs/oabend/uriber/datasets/flickr30k/images'
+image_root: '/cs/labs/oabend/uriber/datasets/flickr30/images'
 local_train_file: 'style_data/humor_train.json'
 local_test_file: 'style_data/humor_test.json'
 
@@ -29,5 +29,5 @@ prompt: 'a picture of '
 # optimizer
 weight_decay: 0.05
 min_lr: 0
-max_epoch: 1
+max_epoch: 5
 
