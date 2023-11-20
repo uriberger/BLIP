@@ -7,3 +7,4 @@ model_large_retrieval_coco.pth
 reformulation_data/*
 pascal_data/*
 *~
+style_data

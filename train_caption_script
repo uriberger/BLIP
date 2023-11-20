@@ -1,3 +1,3 @@
 #!/bin/sh
 
-venv/bin/python train_caption.py
+venv/bin/python train_caption.py --config configs/caption_coco_style.yaml
