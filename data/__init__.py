@@ -70,9 +70,9 @@ def create_dataset(dataset, config, min_scale=0.5):
     
     elif dataset=='local_coco':
         train_dataset = coco_karpathy_local_train(transform_train, config['image_root'], config['local_train_file'], prompt=config['prompt'])
-        val_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['local_test_file'], 'val')
+        val_dataset = coco_karpathy_local_eval(transform_test, config['image_root'], config['local_test_file'], 'val')
         #val_dataset = coco_karpathy_local_eval(transform_test, '/cs/labs/oabend/uriber/datasets/pascal_sentences', config['local_ann_file'], 'val')
-        test_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['local_test_file'], 'test')   
+        test_dataset = coco_karpathy_local_eval(transform_test, config['image_root'], config['local_test_file'], 'test')   
         return train_dataset, val_dataset, test_dataset
     
     elif dataset=='local_vqa': 
