@@ -76,8 +76,8 @@ def create_dataset(dataset, config, min_scale=0.5):
         return train_dataset, val_dataset, test_dataset
     
     elif dataset=='local_vqa': 
-        train_dataset = vqa_local_dataset(transform_train, config['local_train_file'], config['coco_root'], split='train')
-        test_dataset = vqa_local_dataset(transform_test, config['local_test_file'], config['coco_root'], split='test')
+        train_dataset = vqa_local_dataset(transform_train, config['local_train_file'], config['flickr30k_root'], split='train')
+        test_dataset = vqa_local_dataset(transform_test, config['local_test_file'], config['flickr30k_root'], split='test')
         return train_dataset, test_dataset
     
     

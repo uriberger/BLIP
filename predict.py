@@ -19,11 +19,11 @@ from models.blip_itm import blip_itm
 
 
 class Predictor(cog.Predictor):
-    def setup(self):
+    def setup(self, model_path):
         self.device = "cuda:0"
 
         self.models = {
-            'image_captioning': blip_decoder(pretrained='checkpoints/model*_base_caption.pth',
+            'image_captioning': blip_decoder(pretrained=model_path,
                                              image_size=384, vit='base'),
             'visual_question_answering': blip_vqa(pretrained='checkpoints/model*_vqa.pth',
                                                   image_size=480, vit='base'),
@@ -69,7 +69,7 @@ class Predictor(cog.Predictor):
         if task == 'image_captioning':
             with torch.no_grad():
                 caption = model.generate(im, sample=False, num_beams=3, max_length=20, min_length=5)
-                return 'Caption: ' + caption[0]
+                return caption[0]
 
         if task == 'visual_question_answering':
             with torch.no_grad():
