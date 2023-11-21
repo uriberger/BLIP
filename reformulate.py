@@ -14,10 +14,6 @@ if __name__ == '__main__':
 
     with open(args.input_file, 'r') as fp:
         data = json.load(fp)
-    if type(data[0]) is dict:
-        image_ids = [x['image_id'] for x in data]
-    else:
-        image_ids = data
 
     if args.dataset == 'COCO':
         with open('../CLIP_prefix_caption/dataset_coco.json', 'r') as fp:
@@ -29,19 +25,20 @@ if __name__ == '__main__':
     model_path = args.model_path
     predictor = Predictor()
     print("Setting up predictor", flush=True)
-    predictor.setup(model_path, task='image_captioning')
+    predictor.setup(model_path, task='visual_question_answering')
 
-    print("Generating captions", flush=True)
+    print("Generating reformulations", flush=True)
     res = []
     t = time.time()
-    for i in range(len(image_ids)):
+    for i in range(len(data)):
         if i % 100 == 0:
-            print(f'Starting sample {i} out of {len(image_ids)}, time from prev {time.time() - t}', flush=True)
+            print(f'Starting sample {i} out of {len(data)}, time from prev {time.time() - t}', flush=True)
             t = time.time()
             with open(args.output_file, 'w') as fp:
                 fp.write(json.dumps(res))
 
-        image_id = image_ids[i]
+        image_id = data[i]['image_id']
+        orig_caption = data[i]['caption']
         if args.dataset == 'COCO':
             image_path = f'/cs/labs/oabend/uriber/datasets/COCO/{iid_to_split[image_id]}2014/COCO_{iid_to_split[image_id]}_{str(image_id).zfill(12)}.jpg'
         elif args.dataset == 'flickr30k':
@@ -50,8 +47,8 @@ if __name__ == '__main__':
             assert False, f'Unknown dataset {args.dataset}'
 
         with torch.no_grad():
-            caption = predictor.predict(image=image_path, question=None, caption=None)
-        res.append({'image_id': image_id, 'caption': caption})
+            reformulated_caption = predictor.predict(image=image_path, question=orig_caption, caption=None)
+        res.append({'image_id': image_id, 'caption': reformulated_caption})
 
     with open(args.output_file, 'w') as fp:
         fp.write(json.dumps(res))

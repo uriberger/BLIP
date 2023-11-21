@@ -19,33 +19,35 @@ from models.blip_itm import blip_itm
 
 
 class Predictor(cog.BasePredictor):
-    def setup(self, model_path):
+    def setup(self, model_path, task):
         self.device = "cuda:0"
+        self.task = task
 
-        self.models = {
-            'image_captioning': blip_decoder(pretrained=model_path,
-                                             image_size=384, vit='base')}
+        if task == 'image_captioning':
+            self.model = blip_decoder(pretrained=model_path, image_size=384, vit='base')
+        elif task == 'visual_question_answering':
+            self.model = blip_vqa(pretrained=model_path, image_size=480, vit='base')
 
-    def predict(self, image, task, question, caption):
-        if task == 'visual_question_answering':
+    def predict(self, image, question, caption):
+        if self.task == 'visual_question_answering':
             assert question is not None, 'Please type a question for visual question answering task.'
-        if task == 'image_text_matching':
+        if self.task == 'image_text_matching':
             assert caption is not None, 'Please type a caption for mage text matching task.'
 
-        im = load_image(image, image_size=480 if task == 'visual_question_answering' else 384, device=self.device)
-        model = self.models[task]
+        im = load_image(image, image_size=480 if self.task == 'visual_question_answering' else 384, device=self.device)
+        model = self.model
         model.eval()
         model = model.to(self.device)
 
-        if task == 'image_captioning':
+        if self.task == 'image_captioning':
             with torch.no_grad():
                 caption = model.generate(im, sample=False, num_beams=3, max_length=20, min_length=5)
                 return caption[0]
 
-        if task == 'visual_question_answering':
+        if self.task == 'visual_question_answering':
             with torch.no_grad():
                 answer = model(im, question, train=False, inference='generate')
-                return 'Answer: ' + answer[0]
+                return answer[0]
 
         # image_text_matching
         itm_output = model(im, caption, match_head='itm')
