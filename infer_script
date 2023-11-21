@@ -1,3 +1,3 @@
 #!/bin/sh
 
-venv/bin/python train_caption.py --evaluate
+venv/bin/python inference.py --dataset flickr30k --input_file ../CapDec/postprocessed_style_data/humor_all.json --output_file blip_flickr_style_captions.json --model_path model_base_14M.pth

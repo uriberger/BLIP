@@ -18,43 +18,14 @@ from models.blip_vqa import blip_vqa
 from models.blip_itm import blip_itm
 
 
-class Predictor(cog.Predictor):
+class Predictor(cog.BasePredictor):
     def setup(self, model_path):
         self.device = "cuda:0"
 
         self.models = {
             'image_captioning': blip_decoder(pretrained=model_path,
-                                             image_size=384, vit='base'),
-            'visual_question_answering': blip_vqa(pretrained='checkpoints/model*_vqa.pth',
-                                                  image_size=480, vit='base'),
-            'image_text_matching': blip_itm(pretrained='checkpoints/model_base_retrieval_coco.pth',
-                                            image_size=384, vit='base')
-        }
+                                             image_size=384, vit='base')}
 
-    @cog.input(
-        "image",
-        type=Path,
-        help="input image",
-    )
-    @cog.input(
-        "task",
-        type=str,
-        default='image_captioning',
-        options=['image_captioning', 'visual_question_answering', 'image_text_matching'],
-        help="Choose a task.",
-    )
-    @cog.input(
-        "question",
-        type=str,
-        default=None,
-        help="Type question for the input image for visual question answering task.",
-    )
-    @cog.input(
-        "caption",
-        type=str,
-        default=None,
-        help="Type caption for the input image for image text matching task.",
-    )
     def predict(self, image, task, question, caption):
         if task == 'visual_question_answering':
             assert question is not None, 'Please type a question for visual question answering task.'
