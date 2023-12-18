@@ -138,7 +138,7 @@ def main(args, config):
                 
             train_stats = train(model, train_loader, optimizer, epoch, device) 
         
-        val_result = evaluate(model_without_ddp, val_loader, device, config)  
+        '''val_result = evaluate(model_without_ddp, val_loader, device, config)  
         val_result_file = save_result(val_result, args.result_dir, 'val_epoch%d'%epoch, remove_duplicate='image_id')        
   
         test_result = evaluate(model_without_ddp, test_loader, device, config)  
@@ -174,7 +174,7 @@ def main(args, config):
                              'best_epoch': best_epoch,
                             }
                 with open(os.path.join(args.output_dir, "log.txt"),"a") as f:
-                    f.write(json.dumps(log_stats) + "\n")     
+                    f.write(json.dumps(log_stats) + "\n")'''
                     
         if args.evaluate: 
             break
