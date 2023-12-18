@@ -6,7 +6,7 @@ from predict import Predictor
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', default='COCO', choices=['COCO', 'flickr30k'])
+    parser.add_argument('--dataset', default='COCO', choices=['COCO', 'flickr30k', 'xm3600'])
     parser.add_argument('--input_file', required=True)
     parser.add_argument('--output_file', required=True)
     parser.add_argument('--model_path', required=True)
@@ -43,9 +43,11 @@ if __name__ == '__main__':
 
         image_id = image_ids[i]
         if args.dataset == 'COCO':
-            image_path = f'/cs/labs/oabend/uriber/datasets/COCO/{iid_to_split[image_id]}2014/COCO_{iid_to_split[image_id]}_{str(image_id).zfill(12)}.jpg'
+            image_path = f'/cs/labs/oabend/uriber/datasets/COCO/{iid_to_split[image_id]}2014/COCO_{iid_to_split[image_id]}2014_{str(image_id).zfill(12)}.jpg'
         elif args.dataset == 'flickr30k':
             image_path = f'/cs/labs/oabend/uriber/datasets/flickr30/images/{image_id}.jpg'
+        elif args.dataset == 'xm3600':
+            image_path = f'/cs/labs/oabend/uriber/datasets/crossmodal3600/images/{hex(image_id)[2:].zfill(16)}.jpg'
         else:
             assert False, f'Unknown dataset {args.dataset}'
 
